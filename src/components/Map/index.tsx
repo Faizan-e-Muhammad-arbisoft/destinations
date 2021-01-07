@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
-import * as MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-import 'components/Map/Map.css';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import { MapContainerWrapper } from 'components/Map/Map.styles';
 
 const Map = () => {
   const mapContainerRef = useRef(null);
@@ -27,13 +27,17 @@ const Map = () => {
     // Add Geocoding control (the search input)
     map.addControl(geocoder);
 
+    geocoder.on('results', function (results: any) {
+      console.log(results);
+    });
+
     // Clean up on unmount
     return () => map.remove();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
-      <div className="map-container" ref={mapContainerRef} />
+      <MapContainerWrapper ref={mapContainerRef} />
     </div>
   );
 };

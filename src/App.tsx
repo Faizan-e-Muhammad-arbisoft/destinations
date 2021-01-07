@@ -1,13 +1,10 @@
 import React from 'react';
-import Menu from 'components/Menu';
-import Map from 'components/Map/index';
-import 'App.css';
+import Dashboard from 'Dashboard';
 
 function App() {
   return (
     <div className="App">
-      <Menu />
-      <Map />
+      <Dashboard />
     </div>
   );
 }
