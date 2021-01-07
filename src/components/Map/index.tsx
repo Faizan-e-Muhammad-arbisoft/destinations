@@ -1,12 +1,10 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
+import * as MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import 'components/Map/Map.css';
 
 const Map = () => {
   const mapContainerRef = useRef(null);
-
-  const [lng, setLng] = useState(5);
-  const [lat, setLat] = useState(34);
-  const [zoom, setZoom] = useState(1.5);
 
   // Initialize map when component mounts
   useEffect(() => {
@@ -21,13 +19,13 @@ const Map = () => {
     // Add navigation control (the +/- zoom buttons)
     map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // map.on('move', () => {
-    //   setLng(map.getCenter().lng.toFixed(4));
-    //   setLat(map.getCenter().lat.toFixed(4));
-    //   setZoom(map.getZoom().toFixed(2));
-    // });
+    const geocoder = new MapboxGeocoder({
+      accessToken: process.env.REACT_APP_MAPBOX_ACCESS_TOKEN,
+      mapboxgl: mapboxgl,
+    });
 
-    // var marker = new mapboxgl.Marker().setLngLat([12.550343, 55.665957]).addTo(map);
+    // Add Geocoding control (the search input)
+    map.addControl(geocoder);
 
     // Clean up on unmount
     return () => map.remove();
@@ -35,11 +33,6 @@ const Map = () => {
 
   return (
     <div>
-      <div>
-        <div>
-          Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
-        </div>
-      </div>
       <div className="map-container" ref={mapContainerRef} />
     </div>
   );
