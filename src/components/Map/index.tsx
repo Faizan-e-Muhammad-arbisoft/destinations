@@ -1,10 +1,12 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import { MapContainerWrapper } from 'components/Map/Map.styles';
 
 const Map = () => {
   const mapContainerRef = useRef(null);
+
+  const [locationMarker, setLocationMarker] = useState(null);
 
   // Initialize map when component mounts
   useEffect(() => {
@@ -24,12 +26,13 @@ const Map = () => {
       mapboxgl: mapboxgl,
     });
 
+    geocoder.on('result', function (result: any) {
+      setLocationMarker(result);
+      console.log(result);
+    });
+
     // Add Geocoding control (the search input)
     map.addControl(geocoder);
-
-    geocoder.on('results', function (results: any) {
-      console.log(results);
-    });
 
     // Clean up on unmount
     return () => map.remove();
