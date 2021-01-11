@@ -5,6 +5,7 @@ export const HeaderWrapper = styled.h1`
   margin: 20px;
 `;
 
-export const ButtonWrapper = styled.div`
-  text-align: center;
+export const ListWrapper = styled.div`
+  width: 70%;
+  margin: 0 auto 50px auto;
 `;

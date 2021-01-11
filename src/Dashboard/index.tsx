@@ -1,21 +1,19 @@
 import React from 'react';
 import Menu from 'components/Menu';
-import Map from 'components/Map/index';
-import { Button } from 'react-bootstrap';
-import { HeaderWrapper, ButtonWrapper } from 'Dashboard/Dashboard.styles';
+import List from 'components/List';
+import MapContainer from 'components/Map/containers';
+import { HeaderWrapper, ListWrapper } from 'Dashboard/Dashboard.styles';
 
-function Dashboard() {
+function Dashboard(props: any) {
   return (
     <div className="App">
       <Menu />
       <HeaderWrapper>Mark your desired Destinations on the map.</HeaderWrapper>
-      <Map />
-      <ButtonWrapper>
-        <Button variant="outline-primary" size="lg">
-          Mark Destination
-        </Button>
-      </ButtonWrapper>
+      <MapContainer />
       <HeaderWrapper>List of all your desired Destinations.</HeaderWrapper>
+      <ListWrapper>
+        <List locations={props.locations} />
+      </ListWrapper>
     </div>
   );
 }

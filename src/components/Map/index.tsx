@@ -1,12 +1,23 @@
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-import { MapContainerWrapper } from 'components/Map/Map.styles';
+import { Button } from 'react-bootstrap';
+import { MapContainerWrapper, ButtonWrapper } from 'components/Map/Map.styles';
 
-const Map = () => {
+const Map = (props: any) => {
   const mapContainerRef = useRef(null);
 
   const [locationMarker, setLocationMarker] = useState(null);
+  const [btnDisable, setBtnDisable] = useState(true);
+
+  const clickHandler = (marker: any) => {
+    const location = {
+      name: marker.result.place_name,
+      lat: marker.result.center[0],
+      lng: marker.result.center[1],
+    };
+    props.addLocationHandler(location.name, location.lat, location.lng);
+  };
 
   // Initialize map when component mounts
   useEffect(() => {
@@ -28,7 +39,7 @@ const Map = () => {
 
     geocoder.on('result', function (result: any) {
       setLocationMarker(result);
-      console.log(result);
+      setBtnDisable(false);
     });
 
     // Add Geocoding control (the search input)
@@ -41,6 +52,11 @@ const Map = () => {
   return (
     <div>
       <MapContainerWrapper ref={mapContainerRef} />
+      <ButtonWrapper>
+        <Button variant="outline-primary" size="lg" disabled={btnDisable} onClick={() => clickHandler(locationMarker)}>
+          Add Destination to List
+        </Button>
+      </ButtonWrapper>
     </div>
   );
 };
