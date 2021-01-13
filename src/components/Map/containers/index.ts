@@ -1,13 +1,22 @@
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
+import { getJsonData } from 'store/selectors/fetchData';
 import { addLocation } from 'store/actions/userLocations';
-
+import { getData } from 'store/actions/fetchData';
+import { RootStore } from 'store';
 import Map from 'components/Map';
 
-const mapDispatchToProps = (dispatch: Dispatch) => {
+const mapStateToProps = (state: RootStore) => {
   return {
-    addLocationHandler: (name: string, lat: number, lng: number) => dispatch<any>(addLocation(name, lat, lng)),
+    data: getJsonData(state),
   };
 };
 
-export default connect(null, mapDispatchToProps)(Map);
+const mapDispatchToProps = (dispatch: Dispatch) => {
+  return {
+    addLocationHandler: (name: string, lng: number, lat: number) => dispatch<any>(addLocation(name, lng, lat)),
+    fetchDataHandler: (cityName: string) => dispatch<any>(getData(cityName)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Map);

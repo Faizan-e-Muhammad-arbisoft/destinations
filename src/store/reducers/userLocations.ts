@@ -1,14 +1,14 @@
 import * as actionTypes from 'store/actions/actionTypes';
 import { ILocation } from 'types';
-import { initialState } from 'store/reducers/initialState';
+import { initialStateLocations } from 'store/reducers/initialState';
 
-const reducer = (state = initialState, action: actionTypes.AddLocationDispatchTypes) => {
+const reducer = (state = initialStateLocations, action: actionTypes.AddLocationDispatchTypes) => {
   switch (action.type) {
     case actionTypes.ADD_LOCATION_SUCCESS:
       const newLocation: ILocation = {
         name: action.payload.name,
-        lat: action.payload.lat,
         lng: action.payload.lng,
+        lat: action.payload.lat,
       };
       return {
         ...state,

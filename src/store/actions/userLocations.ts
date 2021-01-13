@@ -11,8 +11,8 @@ export const addLocation = (name: string, lat: number, lng: number) => (
 
     const locationData = {
       name: name,
-      lat: lat,
       lng: lng,
+      lat: lat,
     };
 
     dispatch({
