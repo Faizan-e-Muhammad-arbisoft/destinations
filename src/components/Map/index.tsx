@@ -1,15 +1,42 @@
-import React, { useRef, useEffect, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import React, { useRef, useState, useCallback } from 'react';
+import ReactMapGL from 'react-map-gl';
+import Geocoder from 'react-map-gl-geocoder';
 import { Button } from 'react-bootstrap';
 import { MapContainerWrapper, ButtonWrapper } from 'components/Map/Map.styles';
 
 const Map = (props: any) => {
   console.log(props.data);
-  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
 
   const [locationMarker, setLocationMarker] = useState(null);
   const [btnDisable, setBtnDisable] = useState(true);
+  const [viewport, setViewport] = useState({
+    width: '100%',
+    height: '100%',
+    latitude: 37.7577,
+    longitude: -122.4376,
+    zoom: 8,
+  });
+
+  const handleViewportChange = useCallback((newViewport) => setViewport(newViewport), []);
+
+  const handleGeocoderViewportChange = useCallback(
+    (newViewport) => {
+      const geocoderDefaultOverrides = { transitionDuration: 2000 };
+
+      return handleViewportChange({
+        ...newViewport,
+        ...geocoderDefaultOverrides,
+      });
+    },
+    [handleViewportChange]
+  );
+
+  const handleGeocoderResult = useCallback((result) => {
+    console.log(result);
+    setLocationMarker(result);
+    setBtnDisable(false);
+  }, []);
 
   const addToListClickHandler = (marker: any) => {
     const location = {
@@ -26,58 +53,24 @@ const Map = (props: any) => {
     props.fetchDataHandler(cityName);
   };
 
-  // Initialize map when component mounts
-  useEffect(() => {
-    const map = new mapboxgl.Map({
-      accessToken: process.env.REACT_APP_MAPBOX_ACCESS_TOKEN,
-      container: mapContainerRef.current || '',
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [5, 34],
-      zoom: 1.5,
-    });
-
-    map.on('load', () => {
-      map.addSource('point', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: props.data,
-        },
-      });
-      map.addLayer({
-        id: 'point',
-        type: 'circle',
-        source: 'point',
-        paint: {
-          'circle-radius': 8,
-          'circle-color': '#000',
-        },
-      });
-    });
-
-    // Add navigation control (the +/- zoom buttons)
-    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-    const geocoder = new MapboxGeocoder({
-      accessToken: process.env.REACT_APP_MAPBOX_ACCESS_TOKEN,
-      mapboxgl: mapboxgl,
-    });
-
-    geocoder.on('result', function (result: any) {
-      setLocationMarker(result);
-      setBtnDisable(false);
-    });
-
-    // Add Geocoding control (the search input)
-    map.addControl(geocoder);
-
-    // Clean up on unmount
-    return () => map.remove();
-  }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
-
   return (
     <div>
-      <MapContainerWrapper ref={mapContainerRef} />
+      <MapContainerWrapper>
+        <ReactMapGL
+          ref={mapRef}
+          {...viewport}
+          onViewportChange={handleViewportChange}
+          mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_ACCESS_TOKEN}
+          mapStyle="mapbox://styles/mapbox/basic-v9"
+        />
+      </MapContainerWrapper>
+      <Geocoder
+        mapRef={mapRef}
+        mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_ACCESS_TOKEN}
+        onViewportChange={handleGeocoderViewportChange}
+        onResult={handleGeocoderResult}
+        position="top-left"
+      />
       <ButtonWrapper>
         <Button
           variant="outline-primary"

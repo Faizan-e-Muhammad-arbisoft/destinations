@@ -2,6 +2,7 @@
 /// <reference types="geojson" />
 
 declare module '@mapbox/mapbox-gl-geocoder';
+declare module 'react-map-gl-geocoder';
 
 declare namespace __MapboxGeocoder {
   interface LngLatLiteral {

@@ -8,13 +8,31 @@ export const getData = (cityName: string) => (dispatch: Dispatch<actionTypes.Get
   });
 
   axios
-    .get(`http://tour-pedia.org/api/getPlaces?location=${cityName}&category=restaurant`)
+    .get(`http://tour-pedia.org/api/getPlaces?location=${cityName}`)
     .then((response: any) => {
       let newData: any = [];
       response.data.forEach((d: any) => {
-        newData.push(
-          JSON.parse('{"type": "Feature", "geometry": {"type": "Point", "coordinates": [' + d.lng + ',' + d.lat + ']}}')
-        );
+        if (d.category === 'restaurant') {
+          newData.push(
+            JSON.parse(
+              '{"type": "Feature", "properties": {"icon": "restaurant"},"geometry": {"type": "Point", "coordinates": [' +
+                d.lng +
+                ',' +
+                d.lat +
+                ']}}'
+            )
+          );
+        } else if (d.category === 'accommodation') {
+          newData.push(
+            JSON.parse(
+              '{"type": "Feature", "properties": {"icon": "lodging"},"geometry": {"type": "Point", "coordinates": [' +
+                d.lng +
+                ',' +
+                d.lat +
+                ']}}'
+            )
+          );
+        }
       });
       dispatch({
         type: actionTypes.GET_DATA_SUCCESS,
@@ -22,6 +40,7 @@ export const getData = (cityName: string) => (dispatch: Dispatch<actionTypes.Get
       });
     })
     .catch((error) => {
+      console.log(error);
       dispatch({
         type: actionTypes.GET_DATA_FAILED,
       });
