@@ -1,11 +1,15 @@
 import React, { useRef, useState, useCallback } from 'react';
-import ReactMapGL from 'react-map-gl';
+import ReactMapGL, { Source, Layer } from 'react-map-gl';
 import Geocoder from 'react-map-gl-geocoder';
 import { Button } from 'react-bootstrap';
 import { MapContainerWrapper, ButtonWrapper } from 'components/Map/Map.styles';
 
 const Map = (props: any) => {
   console.log(props.data);
+  const geojson: any = {
+    type: 'FeatureCollection',
+    features: props.data,
+  };
   const mapRef = useRef(null);
 
   const [locationMarker, setLocationMarker] = useState(null);
@@ -62,7 +66,18 @@ const Map = (props: any) => {
           onViewportChange={handleViewportChange}
           mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_ACCESS_TOKEN}
           mapStyle="mapbox://styles/mapbox/basic-v9"
-        />
+        >
+          <Source id="my-data" type="geojson" data={geojson}>
+            <Layer
+              id="point"
+              type="circle"
+              paint={{
+                'circle-radius': 10,
+                'circle-color': '#007cbf',
+              }}
+            />
+          </Source>
+        </ReactMapGL>
       </MapContainerWrapper>
       <Geocoder
         mapRef={mapRef}
