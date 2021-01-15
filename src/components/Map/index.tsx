@@ -6,12 +6,36 @@ import { MapContainerWrapper, ButtonWrapper } from 'components/Map/Map.styles';
 
 const Map = (props: any) => {
   console.log(props.data);
+
+  // Handling geojosn data getting as prop and making different layer for different categories
   const geojson: any = {
     type: 'FeatureCollection',
     features: props.data,
   };
+  const restaurantLayer = {
+    id: 'restaurant-point',
+    type: 'symbol',
+    paint: {},
+    layout: {
+      'icon-image': 'restaurant-15',
+      'icon-allow-overlap': true,
+    },
+    filter: ['==', 'icon', 'restaurant'],
+  };
+  const accommodationLayer = {
+    id: 'accommodation-point',
+    type: 'symbol',
+    paint: {},
+    layout: {
+      'icon-image': 'lodging-15',
+      'icon-allow-overlap': true,
+    },
+    filter: ['==', 'icon', 'lodging'],
+  };
+
   const mapRef = useRef(null);
 
+  // Component States
   const [locationMarker, setLocationMarker] = useState(null);
   const [btnDisable, setBtnDisable] = useState(true);
   const [viewport, setViewport] = useState({
@@ -22,6 +46,7 @@ const Map = (props: any) => {
     zoom: 8,
   });
 
+  // Map function handlers
   const handleViewportChange = useCallback((newViewport) => setViewport(newViewport), []);
 
   const handleGeocoderViewportChange = useCallback(
@@ -42,6 +67,7 @@ const Map = (props: any) => {
     setBtnDisable(false);
   }, []);
 
+  // Button function handlers
   const addToListClickHandler = (marker: any) => {
     const location = {
       name: marker.result.place_name,
@@ -68,14 +94,8 @@ const Map = (props: any) => {
           mapStyle="mapbox://styles/mapbox/basic-v9"
         >
           <Source id="my-data" type="geojson" data={geojson}>
-            <Layer
-              id="point"
-              type="circle"
-              paint={{
-                'circle-radius': 10,
-                'circle-color': '#007cbf',
-              }}
-            />
+            <Layer {...restaurantLayer} />
+            <Layer {...accommodationLayer} />
           </Source>
         </ReactMapGL>
       </MapContainerWrapper>
