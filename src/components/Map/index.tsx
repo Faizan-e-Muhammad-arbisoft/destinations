@@ -1,7 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import ReactMapGL, { Source, Layer } from 'react-map-gl';
 import Geocoder from 'react-map-gl-geocoder';
-import { Button } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import { MapContainerWrapper, ButtonWrapper } from 'components/Map/Map.styles';
 
 const Map = (props: any) => {
@@ -33,7 +33,7 @@ const Map = (props: any) => {
     filter: ['==', 'icon', 'lodging'],
   };
 
-  const mapRef = useRef(null);
+  const mapRef = useRef<null | any>(null);
 
   // Component States
   const [locationMarker, setLocationMarker] = useState(null);
@@ -83,6 +83,12 @@ const Map = (props: any) => {
     props.fetchDataHandler(cityName);
   };
 
+  const layerHandler = (e: any, layer: any) => {
+    const layer_id = layer.id;
+    if (e.target.checked) mapRef.current.getMap().setLayoutProperty(layer_id, 'visibility', 'visible');
+    else mapRef.current.getMap().setLayoutProperty(layer_id, 'visibility', 'none');
+  };
+
   return (
     <div>
       <MapContainerWrapper>
@@ -106,6 +112,8 @@ const Map = (props: any) => {
         onResult={handleGeocoderResult}
         position="top-left"
       />
+      <Form.Check label="Toggle Restaurants" onChange={(e: any) => layerHandler(e, restaurantLayer)} />
+      <Form.Check label="Toggle Accommodations" onChange={(e: any) => layerHandler(e, accommodationLayer)} />
       <ButtonWrapper>
         <Button
           variant="outline-primary"

@@ -9,6 +9,7 @@ import Map from 'components/Map';
 const mapStateToProps = (state: RootStore) => {
   return {
     data: getJsonData(state),
+    loading: state.fetchData.loading,
   };
 };
 
