@@ -1,12 +1,14 @@
 import React, { useRef, useState, useCallback } from 'react';
-import ReactMapGL, { Source, Layer } from 'react-map-gl';
+import ReactMapGL, { Source, Layer, Marker } from 'react-map-gl';
 import Geocoder from 'react-map-gl-geocoder';
 import { clusterLayer, clusterCountLayer, restaurantLayer, accommodationLayer } from 'components/Map/layers';
 import { Button, Form, Spinner } from 'react-bootstrap';
 import { MapContainerWrapper, ContainerWrapper, ButtonWrapper, CheckboxWrapper } from 'components/Map/Map.styles';
+import image from 'media/images/pin.png';
 
 const Map = (props: any) => {
-  console.log(props.data);
+  console.log('Data: ', props.data);
+  console.log('Locations: ', props.locations);
 
   // Handling geojosn data getting as prop and making different layer for different categories
   const geojson: any = {
@@ -53,12 +55,12 @@ const Map = (props: any) => {
   const addToListClickHandler = (marker: any) => {
     const location = {
       name: marker.result.place_name,
-      lng: marker.result.center[0],
-      lat: marker.result.center[1],
+      lng: marker.result.center[1],
+      lat: marker.result.center[0],
     };
 
     const isInArray =
-      props.locations.find((el) => {
+      props.locations.find((el: any) => {
         return el.name === location.name;
       }) !== undefined;
 
@@ -71,13 +73,14 @@ const Map = (props: any) => {
     props.fetchDataHandler(cityName);
   };
 
-  const layerHandler = (e: any, layer: any) => {
+  const toggleLayerHandler = (e: any, layer: any) => {
     setChecked(!checked);
     const layer_id = layer.id;
     if (e.target.checked) mapRef.current.getMap().setLayoutProperty(layer_id, 'visibility', 'visible');
     else mapRef.current.getMap().setLayoutProperty(layer_id, 'visibility', 'none');
   };
 
+  // Dynamic React elements
   let toggleElement: null | any = null;
   if (props.data.length === 0 && props.loading === false) {
     toggleElement = (
@@ -98,14 +101,14 @@ const Map = (props: any) => {
           <Form.Check
             label="Toggle Restaurants"
             checked={checked}
-            onChange={(e: any) => layerHandler(e, restaurantLayer)}
+            onChange={(e: any) => toggleLayerHandler(e, restaurantLayer)}
           />
         </CheckboxWrapper>
         <CheckboxWrapper>
           <Form.Check
             label="Toggle Accommodations"
             checked={checked}
-            onChange={(e: any) => layerHandler(e, accommodationLayer)}
+            onChange={(e: any) => toggleLayerHandler(e, accommodationLayer)}
           />
         </CheckboxWrapper>
       </ContainerWrapper>
@@ -149,6 +152,19 @@ const Map = (props: any) => {
             <Layer {...clusterCountLayer} />
             <Layer {...restaurantLayer} />
             <Layer {...accommodationLayer} />
+            {props.locations.length !== 0
+              ? props.locations.map((location: any, index: number) => (
+                  <Marker
+                    key={`marker-${index}`}
+                    longitude={location.lng}
+                    latitude={location.lat}
+                    offsetLeft={-15}
+                    offsetTop={-15}
+                  >
+                    <img src={image} alt="marker" />
+                  </Marker>
+                ))
+              : null}
           </Source>
         </ReactMapGL>
       </MapContainerWrapper>
@@ -160,7 +176,6 @@ const Map = (props: any) => {
         onResult={handleGeocoderResult}
         position="top-left"
       />
-
       {toggleElement}
 
       <ContainerWrapper>
