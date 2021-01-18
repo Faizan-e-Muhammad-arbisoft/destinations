@@ -1,5 +1,6 @@
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
+import { getUserLocations } from 'store/selectors/userLocations';
 import { getJsonData } from 'store/selectors/fetchData';
 import { addLocation } from 'store/actions/userLocations';
 import { getData } from 'store/actions/fetchData';
@@ -10,6 +11,8 @@ const mapStateToProps = (state: RootStore) => {
   return {
     data: getJsonData(state),
     loading: state.fetchData.loading,
+    error: state.fetchData.error,
+    locations: getUserLocations(state),
   };
 };
 

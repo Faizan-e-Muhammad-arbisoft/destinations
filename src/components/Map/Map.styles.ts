@@ -6,6 +6,16 @@ export const MapContainerWrapper = styled.div`
   margin: 30px auto 30px auto;
 `;
 
-export const ButtonWrapper = styled.div`
+export const ContainerWrapper = styled.div`
   text-align: center;
+`;
+
+export const ButtonWrapper = styled.div`
+  display: inline-block;
+  margin: 20px;
+`;
+
+export const CheckboxWrapper = styled.div`
+  display: inline-block;
+  margin: 10px;
 `;

@@ -40,7 +40,7 @@ export const getData = (cityName: string) => (dispatch: Dispatch<actionTypes.Get
       });
     })
     .catch((error) => {
-      console.log(error);
+      console.log('Error: ', error);
       dispatch({
         type: actionTypes.GET_DATA_FAILED,
       });

@@ -19,6 +19,7 @@ const reducer = (state = initialStateData, action: actionTypes.GetDataDispatchTy
     case actionTypes.GET_DATA_FAILED:
       return {
         ...state,
+        data: [],
         loading: false,
         error: true,
       };

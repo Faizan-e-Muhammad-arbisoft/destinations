@@ -1,8 +1,9 @@
 import React, { useRef, useState, useCallback } from 'react';
 import ReactMapGL, { Source, Layer } from 'react-map-gl';
 import Geocoder from 'react-map-gl-geocoder';
-import { Button, Form } from 'react-bootstrap';
-import { MapContainerWrapper, ButtonWrapper } from 'components/Map/Map.styles';
+import { clusterLayer, clusterCountLayer, restaurantLayer, accommodationLayer } from 'components/Map/layers';
+import { Button, Form, Spinner } from 'react-bootstrap';
+import { MapContainerWrapper, ContainerWrapper, ButtonWrapper, CheckboxWrapper } from 'components/Map/Map.styles';
 
 const Map = (props: any) => {
   console.log(props.data);
@@ -12,31 +13,12 @@ const Map = (props: any) => {
     type: 'FeatureCollection',
     features: props.data,
   };
-  const restaurantLayer = {
-    id: 'restaurant-point',
-    type: 'symbol',
-    paint: {},
-    layout: {
-      'icon-image': 'restaurant-15',
-      'icon-allow-overlap': true,
-    },
-    filter: ['==', 'icon', 'restaurant'],
-  };
-  const accommodationLayer = {
-    id: 'accommodation-point',
-    type: 'symbol',
-    paint: {},
-    layout: {
-      'icon-image': 'lodging-15',
-      'icon-allow-overlap': true,
-    },
-    filter: ['==', 'icon', 'lodging'],
-  };
 
   const mapRef = useRef<null | any>(null);
 
   // Component States
   const [locationMarker, setLocationMarker] = useState(null);
+  const [checked, setChecked] = useState(true);
   const [btnDisable, setBtnDisable] = useState(true);
   const [viewport, setViewport] = useState({
     width: '100%',
@@ -74,7 +56,13 @@ const Map = (props: any) => {
       lng: marker.result.center[0],
       lat: marker.result.center[1],
     };
-    props.addLocationHandler(location.name, location.lng, location.lat);
+
+    const isInArray =
+      props.locations.find((el) => {
+        return el.name === location.name;
+      }) !== undefined;
+
+    if (!isInArray) props.addLocationHandler(location.name, location.lng, location.lat);
   };
 
   const fetchDataClickHandler = (marker: any) => {
@@ -84,10 +72,65 @@ const Map = (props: any) => {
   };
 
   const layerHandler = (e: any, layer: any) => {
+    setChecked(!checked);
     const layer_id = layer.id;
     if (e.target.checked) mapRef.current.getMap().setLayoutProperty(layer_id, 'visibility', 'visible');
     else mapRef.current.getMap().setLayoutProperty(layer_id, 'visibility', 'none');
   };
+
+  let toggleElement: null | any = null;
+  if (props.data.length === 0 && props.loading === false) {
+    toggleElement = (
+      <ContainerWrapper>
+        <p>No nearby places to show...</p>
+      </ContainerWrapper>
+    );
+  } else if (props.data.length === 0 && props.loading === true) {
+    toggleElement = (
+      <ContainerWrapper>
+        <p>Loading...</p>
+      </ContainerWrapper>
+    );
+  } else {
+    toggleElement = (
+      <ContainerWrapper>
+        <CheckboxWrapper>
+          <Form.Check
+            label="Toggle Restaurants"
+            checked={checked}
+            onChange={(e: any) => layerHandler(e, restaurantLayer)}
+          />
+        </CheckboxWrapper>
+        <CheckboxWrapper>
+          <Form.Check
+            label="Toggle Accommodations"
+            checked={checked}
+            onChange={(e: any) => layerHandler(e, accommodationLayer)}
+          />
+        </CheckboxWrapper>
+      </ContainerWrapper>
+    );
+  }
+
+  let buttonElement: null | any = null;
+  if (props.loading) {
+    buttonElement = (
+      <ButtonWrapper>
+        <Button variant="primary" size="lg" disabled>
+          <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+          Fetching Data ...
+        </Button>
+      </ButtonWrapper>
+    );
+  } else {
+    buttonElement = (
+      <ButtonWrapper>
+        <Button variant="primary" size="lg" disabled={btnDisable} onClick={() => fetchDataClickHandler(locationMarker)}>
+          Show Nearby Places
+        </Button>
+      </ButtonWrapper>
+    );
+  }
 
   return (
     <div>
@@ -99,12 +142,17 @@ const Map = (props: any) => {
           mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_ACCESS_TOKEN}
           mapStyle="mapbox://styles/mapbox/basic-v9"
         >
-          <Source id="my-data" type="geojson" data={geojson}>
+          <Source id="my-data" type="geojson" data={geojson} cluster={true} clusterMaxZoom={14} clusterRadius={50}>
+            {/* @ts-ignore */}
+            <Layer {...clusterLayer} />
+            {/* @ts-ignore */}
+            <Layer {...clusterCountLayer} />
             <Layer {...restaurantLayer} />
             <Layer {...accommodationLayer} />
           </Source>
         </ReactMapGL>
       </MapContainerWrapper>
+
       <Geocoder
         mapRef={mapRef}
         mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_ACCESS_TOKEN}
@@ -112,26 +160,22 @@ const Map = (props: any) => {
         onResult={handleGeocoderResult}
         position="top-left"
       />
-      <Form.Check label="Toggle Restaurants" onChange={(e: any) => layerHandler(e, restaurantLayer)} />
-      <Form.Check label="Toggle Accommodations" onChange={(e: any) => layerHandler(e, accommodationLayer)} />
-      <ButtonWrapper>
-        <Button
-          variant="outline-primary"
-          size="lg"
-          disabled={btnDisable}
-          onClick={() => addToListClickHandler(locationMarker)}
-        >
-          Add Destination to List
-        </Button>
-        <Button
-          variant="outline-primary"
-          size="lg"
-          disabled={btnDisable}
-          onClick={() => fetchDataClickHandler(locationMarker)}
-        >
-          Show Nearby Places
-        </Button>
-      </ButtonWrapper>
+
+      {toggleElement}
+
+      <ContainerWrapper>
+        <ButtonWrapper>
+          <Button
+            variant="primary"
+            size="lg"
+            disabled={btnDisable}
+            onClick={() => addToListClickHandler(locationMarker)}
+          >
+            Add Destination to List
+          </Button>
+        </ButtonWrapper>
+        {buttonElement}
+      </ContainerWrapper>
     </div>
   );
 };
