@@ -9,6 +9,7 @@ import image from 'media/images/pin.png';
 const Map = (props: any) => {
   console.log('Data: ', props.data);
   console.log('Locations: ', props.locations);
+  console.log('Loading: ', props.loading);
 
   // Handling geojosn data getting as prop and making different layer for different categories
   const geojson: any = {
@@ -20,7 +21,8 @@ const Map = (props: any) => {
 
   // Component States
   const [locationMarker, setLocationMarker] = useState(null);
-  const [checked, setChecked] = useState(true);
+  const [checkedRestaurant, setCheckedRestaurant] = useState(true);
+  const [checkedAccommodation, setCheckedAccommodation] = useState(true);
   const [btnDisable, setBtnDisable] = useState(true);
   const [viewport, setViewport] = useState({
     width: '100%',
@@ -69,15 +71,15 @@ const Map = (props: any) => {
 
   const fetchDataClickHandler = (marker: any) => {
     const cityName = marker.result.place_name.split(',')[0];
-    console.log(cityName);
     props.fetchDataHandler(cityName);
   };
 
   const toggleLayerHandler = (e: any, layer: any) => {
-    setChecked(!checked);
-    const layer_id = layer.id;
-    if (e.target.checked) mapRef.current.getMap().setLayoutProperty(layer_id, 'visibility', 'visible');
-    else mapRef.current.getMap().setLayoutProperty(layer_id, 'visibility', 'none');
+    if (layer.id === 'accommodation-point') setCheckedAccommodation(!checkedAccommodation);
+    else if (layer.id === 'restaurant-point') setCheckedRestaurant(!checkedRestaurant);
+
+    if (e.target.checked) mapRef.current.getMap().setLayoutProperty(layer.id, 'visibility', 'visible');
+    else mapRef.current.getMap().setLayoutProperty(layer.id, 'visibility', 'none');
   };
 
   // Dynamic React elements
@@ -88,7 +90,7 @@ const Map = (props: any) => {
         <p>No nearby places to show...</p>
       </ContainerWrapper>
     );
-  } else if (props.data.length === 0 && props.loading === true) {
+  } else if (props.loading === true) {
     toggleElement = (
       <ContainerWrapper>
         <p>Loading...</p>
@@ -100,14 +102,14 @@ const Map = (props: any) => {
         <CheckboxWrapper>
           <Form.Check
             label="Toggle Restaurants"
-            checked={checked}
+            checked={checkedRestaurant}
             onChange={(e: any) => toggleLayerHandler(e, restaurantLayer)}
           />
         </CheckboxWrapper>
         <CheckboxWrapper>
           <Form.Check
             label="Toggle Accommodations"
-            checked={checked}
+            checked={checkedAccommodation}
             onChange={(e: any) => toggleLayerHandler(e, accommodationLayer)}
           />
         </CheckboxWrapper>
@@ -135,6 +137,17 @@ const Map = (props: any) => {
     );
   }
 
+  let mapMarkers: null | any = null;
+  if (props.locations.length !== 0) {
+    mapMarkers = props.locations.map((location: any, index: number) => (
+      <Marker key={`marker-${index}`} longitude={location.lng} latitude={location.lat} offsetLeft={-15} offsetTop={-30}>
+        <img src={image} alt="marker" />
+      </Marker>
+    ));
+  } else {
+    mapMarkers = null;
+  }
+
   return (
     <div>
       <MapContainerWrapper>
@@ -152,19 +165,7 @@ const Map = (props: any) => {
             <Layer {...clusterCountLayer} />
             <Layer {...restaurantLayer} />
             <Layer {...accommodationLayer} />
-            {props.locations.length !== 0
-              ? props.locations.map((location: any, index: number) => (
-                  <Marker
-                    key={`marker-${index}`}
-                    longitude={location.lng}
-                    latitude={location.lat}
-                    offsetLeft={-15}
-                    offsetTop={-15}
-                  >
-                    <img src={image} alt="marker" />
-                  </Marker>
-                ))
-              : null}
+            {mapMarkers}
           </Source>
         </ReactMapGL>
       </MapContainerWrapper>
